@@ -45,6 +45,20 @@
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#what-is-sreft-ml">What is SReFT-ML?</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#how-to-use-sreft-ml">How to use sreft-ml</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#_1">用意するデータ</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#_2">前処理</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#_3">ハイパーパラメータの探索</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#_4">モデルの構築</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#_5">プロットの作成</a>
+    </li>
+        </ul>
+    </li>
     </ul>
                 </li>
               </ul>
@@ -77,6 +91,131 @@
               
                 <h1 id="welcome-to-sreft-ml">Welcome to sreft-ml</h1>
 <h2 id="what-is-sreft-ml">What is SReFT-ML?</h2>
+<p>SReFT-ML is a neural network-based method for constructing long-term disease progression models from short-term observational data. It updates the SReFT algorithm to a machine learning-based approach. For detailed information about the concept of SReFT, please refer to <a href="https://ascpt.onlinelibrary.wiley.com/doi/10.1002/cpt.1166">the original paper</a>.</p>
+<h2 id="how-to-use-sreft-ml">How to use sreft-ml</h2>
+<h3 id="_1">用意するデータ</h3>
+<p>SReFT-ML uses time series data of multiple biomarkers. Each record consists of ID, time, and observed value of each biomarker, as shown in the table below. Please format the data beforehand, since the program is created assuming this format. 
+<strong>Note that the column names must be <code>ID</code> for ID and <code>TIME</code> for time.</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">ID</th>
+<th style="text-align: right;">TIME</th>
+<th style="text-align: right;">Biomarker 1</th>
+<th style="text-align: right;">Biomarker 2</th>
+<th>...</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.1</td>
+<td style="text-align: right;">0.5</td>
+<td>...</td>
+</tr>
+<tr>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.2</td>
+<td style="text-align: right;">0.4</td>
+<td>...</td>
+</tr>
+<tr>
+<td style="text-align: right;">...</td>
+<td style="text-align: right;">...</td>
+<td style="text-align: right;">..</td>
+<td style="text-align: right;">...</td>
+<td>...</td>
+</tr>
+<tr>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2.4</td>
+<td>...</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_2">前処理</h3>
+<p>Use <a href="https://ryotajin.github.io/sreft-ml/reference/#sreftml.utilities.split_data_for_sreftml">utilities.split_data_for_sreftml</a> to preprocess the data set prepared in the previous section for SReFT-ML.</p>
+<pre><code class="language-python">x, cov, m, y = utilities.split_data_for_sreftml(
+    df, name_biomarkers, name_covariates, isMixedlm=isMixedlm
+)
+</code></pre>
+<p>Standardize the data if necessary. This is a fundamental and indispensable step since in many cases the scale differs between biomarkers. For the scaler, we assume scikit-learn's Scaler. Any Scaler may be used. Choose the one that best suits the nature of your data.
+<strong>But do not convert x.</strong></p>
+<pre><code class="language-python">x_scaled = x.values.reshape(-1, 1)
+cov_scaled = scaler_cov.fit_transform(cov.values)
+m_scaled = scaler_m.fit_transform(m.values)
+y_scaled = scaler_y.fit_transform(y.values)
+</code></pre>
+<h3 id="_3">ハイパーパラメータの探索</h3>
+<p>To search for hyperparameters, use <a href="https://ryotajin.github.io/sreft-ml/reference/#sreftml.sreftml_model.hp_ search_for_sreftml">sreftml_model.hp_search_for_sreftml</a> to perform random search or grid search.
+Currently, only the items specified in <code>grid_dict</code> below can be targeted.
+The <code>df_grid</code> contains the results. The one with the best <code>score</code> should be used for model building.</p>
+<pre><code class="language-python">grid_dict = {
+    &quot;adam_lr&quot;: [1e-3, 1e-4, 1e-5],
+    &quot;activation_model_1_mid&quot;: [&quot;sigmoid&quot;, &quot;tanh&quot;],
+    &quot;activation_model_1_out&quot;: [&quot;relu&quot;, &quot;softplus&quot;],
+    &quot;activation_model_y_mid&quot;: [&quot;relu&quot;, &quot;tanh&quot;, &quot;linear&quot;],
+}
+
+df_grid = sreftml_model.hp_search_for_sreftml(
+    df,
+    (x_scaled, cov_scaled, m_scaled, y_scaled),
+    grid_dict=grid_dict,
+    n_grid_sample=0,
+    n_splits=3,
+)
+</code></pre>
+<h3 id="_4">モデルの構築</h3>
+<p>Split the data into a training set and a validation set set. This is supposed to be done for each ID, so we use <code>sklearn.model_selection.GroupShuffleSplit</code>.</p>
+<pre><code class="language-python">from sklearn.model_selection import GroupShuffleSplit
+((train_idx, vali_idx),) = GroupShuffleSplit(
+    1, test_size=0.1, random_state=random_seed
+).split(X=df, groups=df.ID)
+</code></pre>
+<p>Build the model. Since <code>sreftml_model.SReFT</code> implements TensorFlow's Subclassing API, its usage conforms to it.</p>
+<pre><code class="language-python">sreft = sreftml_model.SReFT(
+    output_dim=len(name_biomarkers),
+    latent_dim_model_1=m_scaled.shape[1],
+    latent_dim_model_y=y_scaled.shape[1],
+    activation_model_1_mid=&quot;tanh&quot;,
+    activation_model_1_out=&quot;softplus&quot;,
+    activation_model_y_mid=&quot;tanh&quot;,
+    random_state=random_seed,
+)
+sreft.compile(optimizer=keras.optimizers.Adam(1e-5))
+sreft.fit(
+    (
+        x_scaled[train_idx, :],
+        cov_scaled[train_idx, :],
+        m_scaled[train_idx, :],
+        y_scaled[train_idx, :],
+    ),
+    y_scaled[train_idx, :],
+    batch_size=256,
+    validation_data=(
+        (
+            x_scaled[vali_idx, :],
+            cov_scaled[vali_idx, :],
+            m_scaled[vali_idx, :],
+            y_scaled[vali_idx, :],
+        ),
+        y_scaled[vali_idx, :],
+    ),
+    epochs=9999,
+    verbose=0,
+)
+</code></pre>
+<p>Once you have built the model, calculate and save the predictions, etc. Use in plots.</p>
+<pre><code class="language-python">df = utilities.calculate_offsetT_prediction(
+    sreft, df, (x_scaled, cov_scaled, m_scaled, y_scaled), scaler_y, name_biomarkers
+)
+</code></pre>
+<h3 id="_5">プロットの作成</h3>
+<p>Various plotting functions are available. See <a href="https://ryotajin.github.io/sreft-ml/reference/#sreftml.plots">help page</a> for details.</p>
               
             </div>
           </div><footer>
@@ -125,5 +264,5 @@
 
 <!--
 MkDocs version : 1.5.2
-Build Date UTC : 2023-09-12 05:07:35.842255+00:00
+Build Date UTC : 2023-09-12 06:32:23.752463+00:00
 -->
