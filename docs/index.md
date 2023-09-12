@@ -27,7 +27,7 @@ x, cov, m, y = utilities.split_data_for_sreftml(
 ```
 
 Standardize the data if necessary. This is a fundamental and indispensable step since in many cases the scale differs between biomarkers. For the scaler, we assume scikit-learn's Scaler. Any Scaler may be used. Choose the one that best suits the nature of your data.
-**But do not convert x.**
+**But do not convert x. x is in pandas format, so please only convert it to numpy format.**
 
 ```python
 x_scaled = x.values.reshape(-1, 1)
