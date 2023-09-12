@@ -6,7 +6,7 @@ SReFT-ML is a neural network-based method for constructing long-term disease pro
 
 
 ## How to use sreft-ml
-### 用意するデータ
+### Required Data
 SReFT-ML uses time series data of multiple biomarkers. Each record consists of ID, time, and observed value of each biomarker, as shown in the table below. Please format the data beforehand, since the program is created assuming this format. 
 **Note that the column names must be `ID` for ID and `TIME` for time.**
 
@@ -17,7 +17,7 @@ SReFT-ML uses time series data of multiple biomarkers. Each record consists of I
 |...|...|..|...|...|
 |100|5|1|2.4|...|
 
-### 前処理
+### Preprocessing
 Use [utilities.split_data_for_sreftml](https://ryotajin.github.io/sreft-ml/reference/#sreftml.utilities.split_data_for_sreftml) to preprocess the data set prepared in the previous section for SReFT-ML.
 
 ```python
@@ -36,7 +36,7 @@ m_scaled = scaler_m.fit_transform(m.values)
 y_scaled = scaler_y.fit_transform(y.values)
 ```
 
-### ハイパーパラメータの探索
+### Hyperparameter Search
 To search for hyperparameters, use [sreftml_model.hp_search_for_sreftml](https://ryotajin.github.io/sreft-ml/reference/#sreftml.sreftml_model.hp_ search_for_sreftml) to perform random search or grid search.
 Currently, only the items specified in `grid_dict` below can be targeted.
 The `df_grid` contains the results. The one with the best `score` should be used for model building.
@@ -58,7 +58,7 @@ df_grid = sreftml_model.hp_search_for_sreftml(
 )
 ```
 
-### モデルの構築
+### Model Building
 Split the data into a training set and a validation set set. This is supposed to be done for each ID, so we use `sklearn.model_selection.GroupShuffleSplit`.
 
 ```python
@@ -112,5 +112,5 @@ df = utilities.calculate_offsetT_prediction(
 )
 ```
 
-### プロットの作成
+### Creating Plots
 Various plotting functions are available. See [help page](https://ryotajin.github.io/sreft-ml/reference/#sreftml.plots) for details.
