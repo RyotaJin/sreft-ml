@@ -289,7 +289,7 @@ def clean_duplicate(
     return df_
 
 
-def compute_permutation_importance(
+def compute_permutation_importance_(
     random_seed: int,
     sreft: tf.keras.Model,
     x_test: np.ndarray,
@@ -299,7 +299,7 @@ def compute_permutation_importance(
     n_sample: int,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
-    Compute permutation importance of the model.
+    [Superseded] Compute permutation importance of the model.
 
     Args:
         random_seed (int): The seed for the random number generator.
@@ -346,13 +346,11 @@ def compute_permutation_importance(
     return np.array(mean_pi), np.array(std_pi)
 
 
-def compute_permutation_importance_offsetT(
+def compute_permutation_importance(
     random_seed: int,
     sreft: tf.keras.Model,
-    x_test: np.ndarray,
     cov_test: np.ndarray,
     m_test: np.ndarray,
-    y_test: np.ndarray,
     n_sample: int,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
@@ -361,10 +359,8 @@ def compute_permutation_importance_offsetT(
     Args:
         random_seed (int): The seed for the random number generator.
         sreft (tf.keras.Model): The model for which to calculate permutation importance.
-        x_test (np.ndarray): The x test data.
         cov_test (np.ndarray): The covariates test data.
         m_test (np.ndarray): The m test data.
-        y_test (np.ndarray): The y test data.
         n_sample (int): The number of samples.
 
     Returns:
@@ -372,7 +368,6 @@ def compute_permutation_importance_offsetT(
     """
     rng = np.random.default_rng(random_seed)
     offestt_pred = sreft.model_1(np.concatenate((m_test, cov_test), axis=-1)).numpy()
-    # neglls_orig = np_compute_negative_log_likelihood(y_test, y_pred, sreft.lnvar_y)
 
     mean_pi = []
     std_pi = []
