@@ -22,6 +22,7 @@ INSTALL_REQUIRES = [
     "lifelines>=0.28.0",
     "seaborn>=0.12.2",
     "scipy>=1.11.2",
+    "shap>=0.44.1"
 ]
 
 PACKAGES = find_packages()
