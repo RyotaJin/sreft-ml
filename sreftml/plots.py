@@ -643,7 +643,8 @@ def merged_permutation_importance_plot(
 
     Args:
         mean_pi (np.ndarray): Array of mean permutation importance values.
-        feature_label (list[str]): List of feature names for which PI was measured.
+        name_biomarkers (List[str]): List of biomarker names.
+        name_covariates (list[str]): The names of the covariates.
         y_axis_log (bool, optional): Whether to use log scale for y-axis. Default is False.
         save_file_path (str, optional): The path where the plot will be saved. Default to None.
 
@@ -973,7 +974,7 @@ def r_squared_plot(
         save_file_path (str, optional): The path where the plot will be saved. Default to None.
 
     Returns:
-    - fig (plt.Figure): Matplotlib figure object representing the generated plot.
+        fig (plt.Figure): Matplotlib figure object representing the generated plot.
     """
     res = df[name_biomarkers].values - df.filter(like="_pred", axis=1).values
     res_var = np.nanvar(res, axis=0)
@@ -1121,7 +1122,7 @@ def merged_shap_bar_plot(
         save_file_path (str, optional): The path where the plot will be saved. Default to None.
 
     Returns:
-    - fig (plt.Figure): Matplotlib figure object representing the generated plot.
+        fig (plt.Figure): Matplotlib figure object representing the generated plot.
     """
     bar = pd.DataFrame(
         {
