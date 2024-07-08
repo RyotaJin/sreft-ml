@@ -131,7 +131,7 @@ class SReFT(tf.keras.Model):
             input_y, y_pred, self.lnvar_y
         )
         self.add_loss(tf.reduce_sum(obj))
-        self.add_metric(tf.reduce_mean(obj), name="loss")
+        # self.add_metric(tf.reduce_mean(obj), name="loss")
 
         return y_pred
 
