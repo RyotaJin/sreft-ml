@@ -72,7 +72,7 @@ def gompertz_surv_inv(s, params):
     Returns:
     - t (numpy.ndarray or float): Inverse survival function values corresponding to the given survival probabilities.
     """
-    t = np.log(1 - params["c_"] / params["lambda_"] * np.log(s)) / params["c_"]
+    t = np.log(1 - params["c_"] / params["lambda_"] * np.log(1 - s)) / params["c_"]
     return t
 
 
