@@ -508,6 +508,12 @@ def survival_analysis(
 
     if fitters_to_use is None:
         fitters_to_use = fitters.keys()
+    
+    if not "kmf" in fitters_to_use:
+        fitters_to_use.append("kmf")
+
+    if not "naf" in fitters_to_use:
+        fitters_to_use.append("naf")
 
     fit_model = {"title": event}
     if useOffsetT:
