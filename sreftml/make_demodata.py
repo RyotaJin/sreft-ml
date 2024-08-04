@@ -122,7 +122,7 @@ def data_synthesis(
     survival_time = np.where(right_c, recuit_time + observation_period, event_time)
     followup_time = survival_time - recuit_time
 
-    disease_range = np.ceil(max(survival_time))
+    disease_range = np.ceil(max(recuit_time))
 
     # parameters synthesis
     params_b = rng.uniform(-0.5, 0.5, n_biomarker_total)
