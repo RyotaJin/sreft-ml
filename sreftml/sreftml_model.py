@@ -135,25 +135,25 @@ class SReFT(tf.keras.Model):
 
         return y_pred
 
-    def build_graph(self, shapes: tuple[int, int, int, int]) -> tf.keras.Model:
-        """
-        Build the computational graph for the model.
+    # def build_graph(self, shapes: tuple[int, int, int, int]) -> tf.keras.Model:
+    #     """
+    #     Build the computational graph for the model.
 
-        Args:
-            shapes (tuple[int, int, int, int]): The shapes of the inputs.
+    #     Args:
+    #         shapes (tuple[int, int, int, int]): The shapes of the inputs.
 
-        Returns:
-            tf.keras.Model: The model with the built computational graph.
-        """
-        input_x = tf.keras.layers.Input(shape=shapes[0], name="time")
-        input_cov = tf.keras.layers.Input(shape=shapes[1], name="covariate")
-        input_m = tf.keras.layers.Input(shape=shapes[2], name="feature")
-        input_y = tf.keras.layers.Input(shape=shapes[3], name="observation")
+    #     Returns:
+    #         tf.keras.Model: The model with the built computational graph.
+    #     """
+    #     input_x = tf.keras.layers.Input(shape=shapes[0], name="time")
+    #     input_cov = tf.keras.layers.Input(shape=shapes[1], name="covariate")
+    #     input_m = tf.keras.layers.Input(shape=shapes[2], name="feature")
+    #     input_y = tf.keras.layers.Input(shape=shapes[3], name="observation")
 
-        return tf.keras.Model(
-            inputs=[input_x, input_cov, input_m],
-            outputs=self.call((input_x, input_cov, input_m, input_y)),
-        )
+    #     return tf.keras.Model(
+    #         inputs=[input_x, input_cov, input_m],
+    #         outputs=self.call((input_x, input_cov, input_m, input_y)),
+    #     )
 
 
 def hp_search_for_sreftml(
