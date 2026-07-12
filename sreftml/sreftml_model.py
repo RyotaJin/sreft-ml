@@ -116,7 +116,7 @@ class SReFT(tf.keras.Model):
             tf.Tensor: The predicted y values.
             :param **kwargs:
         """
-        (input_x, input_cov, input_m, input_y) = inputs
+        input_x, input_cov, input_m, input_y = inputs
         input1 = tf.concat((input_m, input_cov), axis=-1, name="concat")
         offset = self.model_1(input1, training=training)
         offset = tf.clip_by_value(
@@ -131,29 +131,29 @@ class SReFT(tf.keras.Model):
             input_y, y_pred, self.lnvar_y
         )
         self.add_loss(tf.reduce_sum(obj))
-        self.add_metric(tf.reduce_mean(obj), name="loss")
+        # self.add_metric(tf.reduce_mean(obj), name="loss")
 
         return y_pred
 
-    def build_graph(self, shapes: tuple[int, int, int, int]) -> tf.keras.Model:
-        """
-        Build the computational graph for the model.
+    # def build_graph(self, shapes: tuple[int, int, int, int]) -> tf.keras.Model:
+    #     """
+    #     Build the computational graph for the model.
 
-        Args:
-            shapes (tuple[int, int, int, int]): The shapes of the inputs.
+    #     Args:
+    #         shapes (tuple[int, int, int, int]): The shapes of the inputs.
 
-        Returns:
-            tf.keras.Model: The model with the built computational graph.
-        """
-        input_x = tf.keras.layers.Input(shape=shapes[0], name="time")
-        input_cov = tf.keras.layers.Input(shape=shapes[1], name="covariate")
-        input_m = tf.keras.layers.Input(shape=shapes[2], name="feature")
-        input_y = tf.keras.layers.Input(shape=shapes[3], name="observation")
+    #     Returns:
+    #         tf.keras.Model: The model with the built computational graph.
+    #     """
+    #     input_x = tf.keras.layers.Input(shape=shapes[0], name="time")
+    #     input_cov = tf.keras.layers.Input(shape=shapes[1], name="covariate")
+    #     input_m = tf.keras.layers.Input(shape=shapes[2], name="feature")
+    #     input_y = tf.keras.layers.Input(shape=shapes[3], name="observation")
 
-        return tf.keras.Model(
-            inputs=[input_x, input_cov, input_m],
-            outputs=self.call((input_x, input_cov, input_m, input_y)),
-        )
+    #     return tf.keras.Model(
+    #         inputs=[input_x, input_cov, input_m],
+    #         outputs=self.call((input_x, input_cov, input_m, input_y)),
+    #     )
 
 
 def hp_search_for_sreftml(
@@ -196,6 +196,7 @@ def hp_search_for_sreftml(
     gkf = GroupKFold(n_splits=n_splits)
     for i, (tmp_train_idx, tmp_vali_idx) in enumerate(gkf.split(X=df, groups=df.ID)):
         for tmp_grid, grid_items in df_grid.iterrows():
+            callbacks_ = copy.deepcopy(callbacks)
             current_iter = i * len(df_grid) + (tmp_grid + 1)
             current_hp = ", ".join([f"{j}: {grid_items[j]}" for j in grid_items.keys()])
             print(f"\n({current_iter}/{n_splits * len(df_grid)}) {current_hp} -----")
@@ -230,7 +231,7 @@ def hp_search_for_sreftml(
                 batch_size=batch_size,
                 epochs=epochs,
                 verbose=0,
-                callbacks=callbacks,
+                callbacks=callbacks_,
             )
 
             y_pred = tmp_sreft(
