@@ -116,7 +116,7 @@ class SReFT(tf.keras.Model):
             tf.Tensor: The predicted y values.
             :param **kwargs:
         """
-        (input_x, input_cov, input_m, input_y) = inputs
+        input_x, input_cov, input_m, input_y = inputs
         input1 = tf.concat((input_m, input_cov), axis=-1, name="concat")
         offset = self.model_1(input1, training=training)
         offset = tf.clip_by_value(
