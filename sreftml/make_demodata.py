@@ -59,18 +59,18 @@ def model_sigmoid(
     return output
 
 
-def gompertz_surv_inv(s, params):
+def gompertz_cdf_inv(s, params):
     """
-    Calculate the inverse survival function (quantile function) of the Gompertz distribution.
+    Calculate the inverse cumulative distribution function of the Gompertz distribution.
 
     Args:
-    - s (numpy.ndarray or float): Survival probabilities. It should be in the range (0, 1).
+    - s (numpy.ndarray or float): Cumulative probabilities in the range (0, 1).
     - params (dict): Parameters of the Gompertz distribution. It should contain the following keys:
         - "c_" (float): Shape parameter. It must be positive.
         - "lambda_" (float): Scale parameter. It must be positive.
 
     Returns:
-    - t (numpy.ndarray or float): Inverse survival function values corresponding to the given survival probabilities.
+    - t (numpy.ndarray or float): Time values corresponding to the given cumulative probabilities.
     """
     t = np.log(1 - params["c_"] / params["lambda_"] * np.log(1 - s)) / params["c_"]
     return t
@@ -85,7 +85,7 @@ def data_synthesis(
     n_subject: int,
     onset_duration: float,
     observation_period: float,
-    surv_inv: Callable[[float, dict], float] = gompertz_surv_inv,
+    surv_inv: Callable[[float, dict], float] = gompertz_cdf_inv,
     params_surv: dict = {"c_": 0.25, "lambda_": 0.015},
     left_truncate: bool = True,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -101,7 +101,7 @@ def data_synthesis(
         n_subject (int): Number of subjects.
         onset_duration (float): Duration of the onset period.
         observation_period (float): Duration of the observation period.
-        surv_inv (Callable): Inverse survival function.
+        surv_inv (Callable): Inverse cumulative distribution function.
         params_surv (dict): DataFrame containing survival parameters.
         left_truncate (bool): Remove subjects corresponding to left-truncated.
 
