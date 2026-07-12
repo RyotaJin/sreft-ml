@@ -603,7 +603,7 @@ def permutation_importance_plot(
     mean_pi: np.ndarray,
     std_pi: np.ndarray,
     feature_label: list[str],
-    y_axis_log: bool = False,
+    y_scale: str = "linear",
     save_file_path: str | None = None,
 ) -> plt.Figure:
     """
@@ -613,7 +613,7 @@ def permutation_importance_plot(
         mean_pi (np.ndarray): Array of mean permutation importance values.
         std_pi (np.ndarray): Array of standard deviation permutation importance values.
         feature_label (list[str]): List of feature names for which PI was measured.
-        y_axis_log (bool, optional): Whether to use log scale for y-axis. Default is False.
+        y_scale (str): Specifies the y-axis scale. Acceptable values are 'linear', 'log', 'log10' and 'log2'. If an unrecognized value is provided, a warning is displayed and 'linear' scale is used.
         save_file_path (str, optional): The path where the plot will be saved. Default to None.
 
     Returns:
@@ -623,10 +623,19 @@ def permutation_importance_plot(
     fig = plt.figure(figsize=(len(rank) / 4, 10), dpi=300, tight_layout=True)
     plt.bar([feature_label[i] for i in rank], mean_pi[rank], yerr=std_pi[rank])
     plt.xticks(rotation=45, ha="right")
-    if y_axis_log:
-        plt.ylabel("Permutation Importance (log scale)")
+    if y_scale == "log":
+        plt.ylabel("ln(Permutation Importance)")
         plt.yscale("log")
+    elif y_scale == "log10":
+        plt.ylabel("log10(Permutation Importance)")
+        plt.yscale("log", base=10)
+    elif y_scale == "log2":
+        plt.ylabel("log2(Permutation Importance)")
+        plt.yscale("log", base=2)
+    elif y_scale == "linear":
+        plt.ylabel("Permutation Importance")
     else:
+        print(f"Warning: Invalid y_scale value: '{y_scale}'. Defaulting to 'linear'.")
         plt.ylabel("Permutation Importance")
 
     if save_file_path is not None:
@@ -639,7 +648,7 @@ def merged_permutation_importance_plot(
     mean_pi: np.ndarray,
     name_biomarkers: list[str],
     name_covariates: list[str],
-    y_axis_log: bool = False,
+    y_scale: str = "linear",
     save_file_path: str | None = None,
 ) -> plt.Figure:
     """
@@ -649,7 +658,7 @@ def merged_permutation_importance_plot(
         mean_pi (np.ndarray): Array of mean permutation importance values.
         name_biomarkers (List[str]): List of biomarker names.
         name_covariates (list[str]): The names of the covariates.
-        y_axis_log (bool, optional): Whether to use log scale for y-axis. Default is False.
+        y_scale (str): Specifies the y-axis scale. Acceptable values are 'linear', 'log', 'log10' and 'log2'. If an unrecognized value is provided, a warning is displayed and 'linear' scale is used.
         save_file_path (str, optional): The path where the plot will be saved. Default to None.
 
     Returns:
@@ -686,10 +695,19 @@ def merged_permutation_importance_plot(
     fig = plt.figure(figsize=(len(rank) / 4, 10), dpi=300, tight_layout=True)
     plt.bar([result_data.labels.values[i] for i in rank], mean_pi[rank])
     plt.xticks(rotation=45, ha="right")
-    if y_axis_log:
-        plt.ylabel("Permutation Importance (log scale)")
+    if y_scale == "log":
+        plt.ylabel("ln(Permutation Importance)")
         plt.yscale("log")
+    elif y_scale == "log10":
+        plt.ylabel("log10(Permutation Importance)")
+        plt.yscale("log", base=10)
+    elif y_scale == "log2":
+        plt.ylabel("log2(Permutation Importance)")
+        plt.yscale("log", base=2)
+    elif y_scale == "linear":
+        plt.ylabel("Permutation Importance")
     else:
+        print(f"Warning: Invalid y_scale value: '{y_scale}'. Defaulting to 'linear'.")
         plt.ylabel("Permutation Importance")
 
     if save_file_path is not None:

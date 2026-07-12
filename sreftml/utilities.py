@@ -477,7 +477,8 @@ def survival_analysis(
     surv_time: str,
     event: str,
     useOffsetT: bool = True,
-    gompertz_init_params: list = [0.1, 0.1],
+    gompertz_init_params: list = [0.01, 0.1],
+    fitters_to_use: list = None,
 ) -> dict:
     """
     Perform survival analysis and return a dictionary of survival analysis objects.
@@ -490,19 +491,30 @@ def survival_analysis(
         surv_time (str): Column name of the survival time in df.
         event (str): Column name of the event in df.
         useOffsetT (bool, optional): Determines whether to use offsetT for the analysis. Defaults to True.
+        fitters_to_use (list, optional): List of fitter keys to use. Defaults to None (uses all fitters).
 
     Returns:
         dict: A dictionary of survival analysis objects.
     """
-    fitters = [
-        (lifelines.KaplanMeierFitter, "kmf", "KaplanMeier"),
-        (lifelines.NelsonAalenFitter, "naf", "NelsonAalen"),
-        (lifelines.ExponentialFitter, "epf", "Exponential"),
-        (lifelines.WeibullFitter, "wbf", "Weibull"),
-        (GompertzFitter, "gpf", "Gompertz"),
-        (lifelines.LogLogisticFitter, "llf", "LogLogistic"),
-        (lifelines.LogNormalFitter, "lnf", "LogNormal"),
-    ]
+    fitters = {
+        "kmf": (lifelines.KaplanMeierFitter, "KaplanMeier"),
+        "naf": (lifelines.NelsonAalenFitter, "NelsonAalen"),
+        "epf": (lifelines.ExponentialFitter, "Exponential"),
+        "wbf": (lifelines.WeibullFitter, "Weibull"),
+        "gpf": (GompertzFitter, "Gompertz"),
+        "llf": (lifelines.LogLogisticFitter, "LogLogistic"),
+        "lnf": (lifelines.LogNormalFitter, "LogNormal"),
+    }
+
+    if fitters_to_use is None:
+        fitters_to_use = fitters.keys()
+    
+    if not "kmf" in fitters_to_use:
+        fitters_to_use.append("kmf")
+
+    if not "naf" in fitters_to_use:
+        fitters_to_use.append("naf")
+
     fit_model = {"title": event}
     if useOffsetT:
         df_surv = df[["ID", "offsetT", surv_time, event]].dropna().drop_duplicates()
@@ -510,7 +522,8 @@ def survival_analysis(
         if df_surv["offsetT"].min() < 0:
             raise ValueError("offsetT must be greater than or equal to 0.")
 
-        for fitter_class, key, label in fitters:
+        for key in fitters_to_use:
+            fitter_class, label = fitters[key]
             if key == "gpf":
                 fit_model[key] = fitter_class(label=label).fit(
                     durations=df_surv["offsetT"] + df_surv[surv_time],
